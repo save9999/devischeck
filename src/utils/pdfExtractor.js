@@ -1,7 +1,7 @@
-import * as pdfjsLib from 'pdfjs-dist'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 
-// Charger le worker depuis le CDN — méthode fiable quel que soit le bundler
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs`
+// Worker copié dans public/ — accessible à la racine du site
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
 /**
  * Extrait les items texte positionnés d'un PDF, puis les regroupe en lignes
@@ -11,7 +11,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dis
  */
 async function extractRowsFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer()
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+  const pdf = await pdfjsLib.getDocument({
+    data: new Uint8Array(arrayBuffer)
+  }).promise
   const allRows = []
 
   for (let i = 1; i <= pdf.numPages; i++) {
@@ -32,33 +34,12 @@ async function extractRowsFromPdf(file) {
     // Trier les lignes Y de haut en bas (Y décroissant dans un PDF)
     const yKeys = Object.keys(byY).sort((a, b) => Number(b) - Number(a))
     for (const y of yKeys) {
-      // Trier les colonnes de gauche à droite
       const cols = byY[y].sort((a, b) => a.x - b.x)
       allRows.push(cols.map(c => c.str))
     }
   }
 
   return allRows
-}
-
-/**
- * Extrait le texte brut d'un fichier PDF (fallback).
- * @param {File} file
- * @returns {Promise<string>}
- */
-export async function extractTextFromPdf(file) {
-  const arrayBuffer = await file.arrayBuffer()
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
-  let fullText = ''
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i)
-    const content = await page.getTextContent()
-    const pageText = content.items.map(item => item.str).join(' ')
-    fullText += pageText + '\n'
-  }
-
-  return fullText
 }
 
 /**
@@ -81,17 +62,15 @@ export async function parseDevisPdf(file) {
 
     // Chercher les montants dans les colonnes (format: 110,00 ou 1 400,00)
     const amounts = []
-    let designationParts = []
+    const designationParts = []
     let foundAmount = false
 
     for (let i = 1; i < cols.length; i++) {
       const col = cols[i]
-      // Est-ce un montant ? (ex: "110,00", "1 400,00", "1,00")
       if (/^\d[\d\s]*,\d{2}$/.test(col.trim())) {
         amounts.push(col.trim())
         foundAmount = true
       } else if (!foundAmount) {
-        // Avant les montants = partie de la désignation
         designationParts.push(col)
       }
     }
