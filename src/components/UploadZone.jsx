@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { extractTextFromPdf, parseDevisText } from '../utils/pdfExtractor'
+import { parseDevisPdf } from '../utils/pdfExtractor'
 
 export default function UploadZone({ onDevisLoaded }) {
   const [dragging, setDragging] = useState(false)
@@ -23,8 +23,7 @@ export default function UploadZone({ onDevisLoaded }) {
     setFileName(file.name)
 
     try {
-      const text = await extractTextFromPdf(file)
-      const result = parseDevisText(text)
+      const result = await parseDevisPdf(file)
 
       if (result.lines.length === 0) {
         setError('Aucune ligne de devis détectée dans ce PDF. Vérifiez que le fichier contient bien un devis avec des montants.')
@@ -34,8 +33,8 @@ export default function UploadZone({ onDevisLoaded }) {
 
       onDevisLoaded(result)
     } catch (err) {
-      setError('Erreur lors de la lecture du PDF. Le fichier est peut-être protégé ou corrompu.')
-      console.error(err)
+      console.error('PDF parsing error:', err)
+      setError(`Erreur lors de la lecture du PDF : ${err.message || 'fichier protégé ou corrompu'}`)
     }
     setLoading(false)
   }
