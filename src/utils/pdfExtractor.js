@@ -1,9 +1,7 @@
-import * as pdfjsLib from 'pdfjs-dist'
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs'
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 /**
  * Extrait le texte brut d'un fichier PDF.
@@ -12,7 +10,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
  */
 export async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer()
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
   let fullText = ''
 
   for (let i = 1; i <= pdf.numPages; i++) {
