@@ -1,5 +1,10 @@
 import { useState } from 'react'
 import './App.css'
+import UploadZone from './components/UploadZone'
+import RoomList from './components/RoomList'
+import AnalysisReport from './components/AnalysisReport'
+import { calculateSurfaces } from './utils/surfaceCalculator'
+import { analyzeDevis } from './utils/priceAnalyzer'
 
 const STEPS = { UPLOAD: 1, DIMENSIONS: 2, RESULTS: 3 }
 
@@ -38,13 +43,57 @@ function App() {
 
       <main className="app-main">
         {step === STEPS.UPLOAD && (
-          <p style={{ textAlign: 'center', color: '#64748b' }}>Étape 1 — Upload (à venir)</p>
+          <UploadZone onDevisLoaded={(result) => {
+            setDevisLines(result.lines)
+            setRooms([{
+              id: Date.now(),
+              type: 'salle_de_bain',
+              longueur: '',
+              largeur: '',
+              hauteur: '',
+              douche: { largeur: '', profondeur: '' },
+              porte: { largeur: '0.8', hauteur: '2' },
+              fenetre: null
+            }])
+            setStep(STEPS.DIMENSIONS)
+          }} />
         )}
         {step === STEPS.DIMENSIONS && (
-          <p style={{ textAlign: 'center', color: '#64748b' }}>Étape 2 — Dimensions (à venir)</p>
+          <RoomList
+            rooms={rooms}
+            onChange={setRooms}
+            devisLines={devisLines}
+            onAnalyze={() => {
+              const room = rooms[0]
+              const surfaces = calculateSurfaces({
+                ...room,
+                longueur: parseFloat(room.longueur),
+                largeur: parseFloat(room.largeur),
+                hauteur: parseFloat(room.hauteur),
+                douche: room.douche?.largeur && room.douche?.profondeur
+                  ? { largeur: parseFloat(room.douche.largeur), profondeur: parseFloat(room.douche.profondeur) }
+                  : null,
+                porte: room.porte?.largeur
+                  ? { largeur: parseFloat(room.porte.largeur), hauteur: parseFloat(room.porte.hauteur) }
+                  : null,
+                fenetre: null
+              })
+              const result = analyzeDevis(devisLines, surfaces)
+              setAnalysis(result)
+              setStep(STEPS.RESULTS)
+            }}
+          />
         )}
-        {step === STEPS.RESULTS && (
-          <p style={{ textAlign: 'center', color: '#64748b' }}>Étape 3 — Résultats (à venir)</p>
+        {step === STEPS.RESULTS && analysis && (
+          <AnalysisReport
+            analysis={analysis}
+            onReset={() => {
+              setStep(STEPS.UPLOAD)
+              setDevisLines([])
+              setRooms([])
+              setAnalysis(null)
+            }}
+          />
         )}
       </main>
 
