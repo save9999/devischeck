@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf'
+import { jsPDF } from 'jspdf'
 import VerdictBanner from './VerdictBanner'
 import LineAnalysis from './LineAnalysis'
 import CounterQuote from './CounterQuote'

@@ -200,6 +200,8 @@ body {
 .badge-ok { background: var(--green-light); color: var(--green-dark); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-warn { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-bad { background: #fef2f2; color: #dc2626; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-low { background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-unknown { background: #f1f5f9; color: #64748b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 
 /* Upload zone */
 .upload-zone {
@@ -281,6 +283,8 @@ body {
 .line-row-bad { background: #fef2f2; }
 .line-row-warn { background: #fffbeb; }
 .line-row-ok { background: var(--green-bg); }
+.line-row-low { background: #eff6ff; }
+.line-row-unknown { background: #f8fafc; }
 .line-verdict-icon { font-size: 16px; padding-top: 2px; }
 .line-info { flex: 1; }
 .line-designation { font-size: 14px; font-weight: 500; margin-bottom: 4px; }

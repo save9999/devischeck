@@ -29,7 +29,7 @@ export function calculateSurfaces(room) {
     result.empriseReceveur = doucheLarg * doucheProf
     result.carrelageSol = sol - result.empriseReceveur
 
-    const fondDouche = largeur * hauteurFaience
+    const fondDouche = doucheLarg * hauteurFaience
     const retours = 2 * (doucheProf * hauteurFaience)
     result.faienceDouche = fondDouche + retours
     result.credenceVasque = 0.8 * 0.6

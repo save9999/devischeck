@@ -22,7 +22,7 @@ export function generateRecommendations(analysis) {
       recommendations.push({
         type: 'negocier',
         icon: '📐',
-        title: `Négocier : ${line.designation.substring(0, 50)}...`,
+        title: `Négocier : ${line.designation.length > 50 ? line.designation.substring(0, 50) + '...' : line.designation}`,
         message: `Facturé ${line.montantHT.toFixed(2)} € — prix marché estimé ${line.prixMarche.toFixed(2)} € (+${line.ecartPourcent}%). Demandez un détail au m² ou à l'unité.`,
         economie: line.ecart
       })
