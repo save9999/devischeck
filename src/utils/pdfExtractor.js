@@ -1,10 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist'
 
-// Charger le worker via Vite — le ?url retourne le chemin du fichier après build
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).href
+// Charger le worker depuis le CDN — méthode fiable quel que soit le bundler
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs`
 
 /**
  * Extrait les items texte positionnés d'un PDF, puis les regroupe en lignes
