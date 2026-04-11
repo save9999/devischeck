@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "dev:vercel": "vercel dev"
+    "dev:vercel": "vercel dev",
+    "prix:generate": "node scripts/generatePrixBTP.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
