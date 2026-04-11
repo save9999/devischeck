@@ -1,172 +1,150 @@
-import prixBTP from '../data/prixBTP.json'
+import { getCoefficient } from './regionalCoefficient.js'
 
 /**
- * Trouve le meilleur poste de la base de prix correspondant à une désignation.
- * @param {string} designation - texte de la ligne du devis
- * @returns {Object|null} - { key, poste, score }
+ * Résout un chemin de poste dans la structure prixBTP.
+ * @param {object} prixBTP
+ * @param {string|null} path - ex: "postes_transverses.peinture.peinture_murs_2couches"
+ * @returns {object|null}
  */
-export function matchLineToPoste(designation) {
-  const lower = designation.toLowerCase()
-  let bestMatch = null
-  let bestScore = 0
-
-  for (const [key, keywords] of Object.entries(prixBTP.keywords)) {
-    let score = 0
-    for (const kw of keywords) {
-      if (lower.includes(kw.toLowerCase())) {
-        score += kw.length
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score
-      bestMatch = key
-    }
+export function resolvePoste(prixBTP, path) {
+  if (!path || typeof path !== 'string') return null
+  const parts = path.split('.')
+  let cur = prixBTP
+  for (const p of parts) {
+    if (!cur || typeof cur !== 'object' || !(p in cur)) return null
+    cur = cur[p]
   }
-
-  if (!bestMatch || bestScore === 0) return null
-
-  const poste = findPosteByKey(bestMatch)
-  if (!poste) return null
-
-  return { key: bestMatch, poste, score: bestScore }
+  if (!cur || typeof cur !== 'object' || !('unite' in cur)) return null
+  return cur
 }
 
-function findPosteByKey(key) {
-  const mapping = {
-    cabine_douche: 'depose.cabine_douche',
-    receveur: 'plomberie.receveur_standard',
-    carrelage: 'carrelage.sol_gres_cerame',
-    faience: 'carrelage.faience_murale',
-    ragreage: 'preparation.ragreage_fibre',
-    paroi_douche: 'plomberie.paroi_douche_fixe',
-    mitigeur_douche: 'plomberie.mitigeur_douche',
-    mitigeur_lavabo: 'plomberie.mitigeur_lavabo',
-    peinture: 'peinture.peinture_murs_2couches',
-    enduit: 'peinture.enduit_lissage',
-    joint: 'finitions.joint_silicone',
-    per: 'plomberie.alimentation_per',
-    meuble_vasque: 'plomberie.meuble_vasque',
-    vasque: 'plomberie.vasque_ceramique',
-    bonde: 'plomberie.bonde_dn90',
-    ensemble_douche: 'plomberie.ensemble_douche'
-  }
-
-  const path = mapping[key]
-  if (!path) return null
-
-  const [cat, posteKey] = path.split('.')
-  return prixBTP.pieces.salle_de_bain?.[cat]?.[posteKey] || null
+function resolveQuantite(line) {
+  const q = Number(line.quantite)
+  if (Number.isFinite(q) && q > 0) return q
+  return 1
 }
 
-/**
- * Calcule le prix marché d'une ligne en fonction des surfaces réelles.
- */
-export function calculateMarketPrice(poste, surfaces, matchKey) {
-  const matMoy = poste.mat_moy || 0
-  const moMoy = poste.mo_moy || 0
-  const prixUnitaire = matMoy + moMoy
+function calculateMarketPrice(poste, line, coefficient) {
+  const { mat_min = 0, mat_moy = 0, mat_max = 0, mo_min = 0, mo_moy = 0, mo_max = 0 } = poste
+  let matMin = 0, matMoy = 0, matMax = 0, moMin = 0, moMoy = 0, moMax = 0
 
-  if (poste.unite === 'u' || poste.unite === 'fft') {
-    return prixUnitaire
+  switch (line.typePrestation) {
+    case 'fourniture_seule':
+      matMin = mat_min; matMoy = mat_moy; matMax = mat_max
+      break
+    case 'pose_seule':
+      moMin = mo_min; moMoy = mo_moy; moMax = mo_max
+      break
+    case 'fourniture_et_pose':
+    default:
+      matMin = mat_min; matMoy = mat_moy; matMax = mat_max
+      moMin = mo_min; moMoy = mo_moy; moMax = mo_max
+      break
   }
 
-  let surface = 1
-  if (poste.unite === 'm²') {
-    if (matchKey === 'carrelage') {
-      surface = surfaces.carrelageSol || surfaces.sol || 1
-    } else if (matchKey === 'faience') {
-      surface = surfaces.faienceTotal || 7
-    } else if (matchKey === 'ragreage') {
-      surface = surfaces.sol || 1
-    } else if (matchKey === 'peinture' || matchKey === 'enduit') {
-      surface = surfaces.mursPeinture || surfaces.mursNet || 1
-    } else {
-      surface = surfaces.sol || 1
-    }
-  } else if (poste.unite === 'ml') {
-    if (matchKey === 'per') {
-      surface = 5
-    } else if (matchKey === 'joint') {
-      surface = 7
-    } else {
-      surface = surfaces.perimetre || 1
-    }
-  }
+  const q = resolveQuantite(line)
+  const puMoy = (matMoy + moMoy) * coefficient
+  const puMin = (matMin + moMin) * coefficient
+  const puMax = (matMax + moMax) * coefficient
 
-  return Math.round(prixUnitaire * surface * 100) / 100
+  return {
+    prixMoyen: Math.round(puMoy * q * 100) / 100,
+    fourchetteMin: Math.round(puMin * q * 100) / 100,
+    fourchetteMax: Math.round(puMax * q * 100) / 100,
+  }
+}
+
+function classifyLine(montantHT, prixMarche) {
+  const { fourchetteMin, fourchetteMax } = prixMarche
+  if (montantHT >= fourchetteMin && montantHT <= fourchetteMax) return 'ok'
+  if (montantHT > fourchetteMax && montantHT <= fourchetteMax * 1.15) return 'warn'
+  if (montantHT > fourchetteMax * 1.15) return 'bad'
+  if (montantHT < fourchetteMin * 0.85) return 'low'
+  return 'ok'
 }
 
 /**
- * Analyse complète d'un devis.
+ * Point d'entrée. Consomme un objet extraction (sortie de l'API Claude)
+ * et retourne un rapport enrichi avec verdicts et fourchettes marché.
+ *
+ * @param {object} extraction
+ * @param {object} prixBTP - importé par le caller (pour testabilité)
  */
-export function analyzeDevis(devisLines, surfaces) {
-  const analyzedLines = devisLines.map(line => {
-    const match = matchLineToPoste(line.designation)
+export function analyzeDevis(extraction, prixBTP) {
+  if (!prixBTP) {
+    throw new Error('analyzeDevis: prixBTP est requis en argument')
+  }
 
-    if (!match) {
+  const coefficient = getCoefficient(extraction.codePostal)
+  const analyzedLines = (extraction.lines || []).map(line => {
+    const poste = resolvePoste(prixBTP, line.poste)
+
+    if (!poste) {
       return {
         ...line,
         matched: false,
-        matchKey: null,
         prixMarche: null,
-        ecart: null,
-        ecartPourcent: null,
-        verdict: 'unknown'
+        verdict: 'unknown',
+        raisonNonMatch: line.poste ? 'poste_introuvable' : 'poste_non_identifie',
       }
     }
 
-    const prixMarche = calculateMarketPrice(match.poste, surfaces, match.key)
-    const ecart = line.montantHT - prixMarche
-    const ecartPourcent = prixMarche > 0
-      ? Math.round((ecart / prixMarche) * 100)
+    const prixMarche = calculateMarketPrice(poste, line, coefficient)
+    const verdict = classifyLine(Number(line.montantHT) || 0, prixMarche)
+    const ecartMoyen = Math.round((Number(line.montantHT || 0) - prixMarche.prixMoyen) * 100) / 100
+    const ecartPourcent = prixMarche.prixMoyen > 0
+      ? Math.round((ecartMoyen / prixMarche.prixMoyen) * 100)
       : 0
-
-    let verdict = 'ok'
-    if (ecartPourcent > 40) verdict = 'bad'
-    else if (ecartPourcent > 15) verdict = 'warn'
-    else if (ecartPourcent < -15) verdict = 'low'
 
     return {
       ...line,
       matched: true,
-      matchKey: match.key,
       prixMarche,
-      ecart: Math.round(ecart * 100) / 100,
+      ecartMoyen,
       ecartPourcent,
-      verdict
+      verdict,
     }
   })
 
-  analyzedLines.sort((a, b) => (b.ecartPourcent || 0) - (a.ecartPourcent || 0))
+  const verdictOrder = { bad: 0, warn: 1, low: 2, ok: 3, unknown: 4 }
+  analyzedLines.sort((a, b) => {
+    const va = verdictOrder[a.verdict] ?? 5
+    const vb = verdictOrder[b.verdict] ?? 5
+    if (va !== vb) return va - vb
+    return (b.ecartPourcent || 0) - (a.ecartPourcent || 0)
+  })
 
-  const totalArtisan = analyzedLines.reduce((s, l) => s + l.montantHT, 0)
-  const totalMarche = analyzedLines
+  const totalArtisan = analyzedLines.reduce((s, l) => s + (Number(l.montantHT) || 0), 0)
+  const totalMarcheMoyen = analyzedLines
     .filter(l => l.matched)
-    .reduce((s, l) => s + l.prixMarche, 0)
+    .reduce((s, l) => s + l.prixMarche.prixMoyen, 0)
+  const totalMarcheMin = analyzedLines
+    .filter(l => l.matched)
+    .reduce((s, l) => s + l.prixMarche.fourchetteMin, 0)
+  const totalMarcheMax = analyzedLines
+    .filter(l => l.matched)
+    .reduce((s, l) => s + l.prixMarche.fourchetteMax, 0)
 
-  const ecartGlobal = totalMarche > 0
-    ? Math.round(((totalArtisan - totalMarche) / totalMarche) * 100)
+  const ecartPourcent = totalMarcheMoyen > 0
+    ? Math.round(((totalArtisan - totalMarcheMoyen) / totalMarcheMoyen) * 100)
     : 0
 
-  let verdictGlobal = 'ok'
-  if (ecartGlobal > 30) verdictGlobal = 'bad'
-  else if (ecartGlobal > 10) verdictGlobal = 'warn'
-
-  const allQtyOne = devisLines.every(l => l.quantite === 1)
+  let verdict = 'ok'
+  if (ecartPourcent > 30) verdict = 'bad'
+  else if (ecartPourcent > 10) verdict = 'warn'
 
   return {
+    codePostal: extraction.codePostal,
+    coefficient,
+    pieces: extraction.pieces || [],
     lines: analyzedLines,
     totalArtisan: Math.round(totalArtisan * 100) / 100,
-    totalMarche: Math.round(totalMarche * 100) / 100,
-    ecartEuros: Math.round((totalArtisan - totalMarche) * 100) / 100,
-    ecartPourcent: ecartGlobal,
-    verdict: verdictGlobal,
-    alertes: [
-      ...(surfaces.alertes || []),
-      ...(allQtyOne ? [{
-        type: 'metres_manquants',
-        message: 'Toutes les quantités sont à 1 — l\'artisan n\'a pas détaillé les métrés. Les prix au m² sont invérifiables.'
-      }] : [])
-    ]
+    totalMarcheMoyen: Math.round(totalMarcheMoyen * 100) / 100,
+    totalMarcheMin: Math.round(totalMarcheMin * 100) / 100,
+    totalMarcheMax: Math.round(totalMarcheMax * 100) / 100,
+    ecartEuros: Math.round((totalArtisan - totalMarcheMoyen) * 100) / 100,
+    ecartPourcent,
+    verdict,
+    warnings: extraction.warnings || [],
   }
 }
