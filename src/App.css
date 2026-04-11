@@ -320,3 +320,18 @@ body {
   .line-prices { flex-direction: column; gap: 4px; }
   .surfaces-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* === DetectedInfo === */
+.detected-info { background: #f6f7f9; border: 1px solid #e0e3e8; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.detected-info h3 { margin-top: 0; }
+.detected-row { margin-bottom: 12px; }
+.detected-row label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.detected-row input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
+.detected-pieces { display: flex; flex-direction: column; gap: 12px; }
+.detected-piece { background: white; padding: 12px; border-radius: 6px; border: 1px solid #eee; }
+.detected-piece .badge { display: inline-block; background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+.detected-piece .dims { display: flex; gap: 12px; margin-top: 8px; }
+.detected-piece .dims label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.detected-piece .dims input { width: 70px; padding: 4px 6px; }
+.warn-text { color: #b45309; font-size: 13px; margin-top: 8px; }
+.muted { color: #888; font-size: 14px; }
