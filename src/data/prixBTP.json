@@ -1,71 +1,58 @@
 {
   "metadata": {
-    "version": "1.0.0",
-    "region": "Île-de-France",
-    "date_maj": "2026-04-09",
-    "source": "Prix marché constatés IDF 2025-2026"
+    "version": "2.0.0",
+    "date_maj": "2026-04-12",
+    "region_base": "Île-de-France hors Paris",
+    "source": "Seed initial — à compléter via scripts/generatePrixBTP.js",
+    "disclaimer": "Prix indicatifs, fourchette ±15%. Cet outil signale les anomalies, ne certifie pas le prix juste."
+  },
+  "postes_transverses": {
+    "peinture": {
+      "peinture_murs_2couches": { "unite": "m²", "mat_min": 5, "mat_moy": 8, "mat_max": 12, "mo_min": 15, "mo_moy": 22, "mo_max": 30, "reviewed": true },
+      "peinture_plafond_2couches": { "unite": "m²", "mat_min": 5, "mat_moy": 8, "mat_max": 12, "mo_min": 18, "mo_moy": 24, "mo_max": 32, "reviewed": true },
+      "enduit_lissage": { "unite": "m²", "mat_min": 3, "mat_moy": 5, "mat_max": 8, "mo_min": 12, "mo_moy": 15, "mo_max": 20, "reviewed": true }
+    },
+    "carrelage": {
+      "sol_gres_cerame": { "unite": "m²", "mat_min": 15, "mat_moy": 20, "mat_max": 35, "mo_min": 45, "mo_moy": 65, "mo_max": 85, "reviewed": true },
+      "faience_murale": { "unite": "m²", "mat_min": 14, "mat_moy": 18, "mat_max": 30, "mo_min": 50, "mo_moy": 62, "mo_max": 80, "reviewed": true }
+    },
+    "electricite": {
+      "prise_simple": { "unite": "u", "mat_min": 8, "mat_moy": 12, "mat_max": 20, "mo_min": 25, "mo_moy": 35, "mo_max": 50, "reviewed": false },
+      "point_lumineux": { "unite": "u", "mat_min": 10, "mat_moy": 15, "mat_max": 25, "mo_min": 30, "mo_moy": 45, "mo_max": 65, "reviewed": false }
+    },
+    "plomberie": {
+      "alimentation_per": { "unite": "ml", "mat_min": 8, "mat_moy": 12, "mat_max": 18, "mo_min": 25, "mo_moy": 38, "mo_max": 50, "reviewed": true }
+    }
   },
   "pieces": {
     "salle_de_bain": {
-      "depose": {
-        "cabine_douche": { "unite": "u", "mo_min": 100, "mo_moy": 130, "mo_max": 170 },
-        "receveur": { "unite": "u", "mo_min": 50, "mo_moy": 70, "mo_max": 100 },
-        "baignoire": { "unite": "u", "mo_min": 80, "mo_moy": 120, "mo_max": 180 },
-        "meuble_vasque": { "unite": "u", "mo_min": 45, "mo_moy": 65, "mo_max": 90 },
-        "carrelage": { "unite": "m²", "mo_min": 20, "mo_moy": 25, "mo_max": 35 },
-        "faience": { "unite": "m²", "mo_min": 20, "mo_moy": 25, "mo_max": 35 }
-      },
-      "preparation": {
-        "ragreage_fibre": { "unite": "m²", "mat_min": 6, "mat_moy": 10, "mat_max": 15, "mo_min": 20, "mo_moy": 28, "mo_max": 38 },
-        "primaire_accrochage": { "unite": "m²", "mat_min": 3, "mat_moy": 5, "mat_max": 8, "mo_min": 5, "mo_moy": 8, "mo_max": 12 },
-        "etancheite_sel": { "unite": "m²", "mat_min": 8, "mat_moy": 12, "mat_max": 18, "mo_min": 12, "mo_moy": 18, "mo_max": 25 }
-      },
-      "carrelage": {
-        "sol_gres_cerame": { "unite": "m²", "mat_min": 15, "mat_moy": 20, "mat_max": 35, "mo_min": 45, "mo_moy": 65, "mo_max": 85 },
-        "faience_murale": { "unite": "m²", "mat_min": 14, "mat_moy": 18, "mat_max": 30, "mo_min": 50, "mo_moy": 62, "mo_max": 80 },
-        "joint_carrelage": { "unite": "m²", "mat_min": 3, "mat_moy": 5, "mat_max": 8, "mo_min": 8, "mo_moy": 12, "mo_max": 18 }
-      },
-      "plomberie": {
-        "alimentation_per": { "unite": "ml", "mat_min": 8, "mat_moy": 12, "mat_max": 18, "mo_min": 25, "mo_moy": 38, "mo_max": 50 },
-        "receveur_standard": { "unite": "u", "mat_min": 180, "mat_moy": 250, "mat_max": 400, "mo_min": 150, "mo_moy": 200, "mo_max": 300 },
-        "bonde_dn90": { "unite": "u", "mat_min": 20, "mat_moy": 30, "mat_max": 45, "mo_min": 30, "mo_moy": 40, "mo_max": 60 },
-        "paroi_douche_fixe": { "unite": "u", "mat_min": 250, "mat_moy": 350, "mat_max": 500, "mo_min": 100, "mo_moy": 150, "mo_max": 200 },
-        "mitigeur_douche": { "unite": "u", "mat_min": 50, "mat_moy": 75, "mat_max": 120, "mo_min": 60, "mo_moy": 80, "mo_max": 120 },
-        "mitigeur_lavabo": { "unite": "u", "mat_min": 40, "mat_moy": 60, "mat_max": 100, "mo_min": 50, "mo_moy": 70, "mo_max": 100 },
-        "ensemble_douche": { "unite": "u", "mat_min": 40, "mat_moy": 60, "mat_max": 100, "mo_min": 30, "mo_moy": 45, "mo_max": 70 },
-        "meuble_vasque": { "unite": "u", "mat_min": 120, "mat_moy": 180, "mat_max": 300, "mo_min": 80, "mo_moy": 120, "mo_max": 180 },
-        "vasque_ceramique": { "unite": "u", "mat_min": 60, "mat_moy": 90, "mat_max": 160, "mo_min": 50, "mo_moy": 70, "mo_max": 100 }
-      },
-      "peinture": {
-        "preparation_support": { "unite": "m²", "mo_min": 6, "mo_moy": 8, "mo_max": 12 },
-        "enduit_lissage": { "unite": "m²", "mat_min": 3, "mat_moy": 5, "mat_max": 8, "mo_min": 12, "mo_moy": 15, "mo_max": 20 },
-        "sous_couche_ph": { "unite": "m²", "mat_min": 3, "mat_moy": 4, "mat_max": 6, "mo_min": 4, "mo_moy": 6, "mo_max": 9 },
-        "peinture_murs_2couches": { "unite": "m²", "mat_min": 5, "mat_moy": 8, "mat_max": 12, "mo_min": 15, "mo_moy": 22, "mo_max": 30 },
-        "peinture_plafond_2couches": { "unite": "m²", "mat_min": 5, "mat_moy": 8, "mat_max": 12, "mo_min": 18, "mo_moy": 24, "mo_max": 32 },
-        "joint_acrylique": { "unite": "ml", "mat_min": 1, "mat_moy": 2, "mat_max": 3, "mo_min": 3, "mo_moy": 5, "mo_max": 8 }
-      },
-      "finitions": {
-        "joint_silicone": { "unite": "ml", "mat_min": 1, "mat_moy": 2, "mat_max": 3, "mo_min": 4, "mo_moy": 6, "mo_max": 9 },
-        "deplacement": { "unite": "fft", "mo_min": 60, "mo_moy": 100, "mo_max": 150 }
+      "postes_specifiques": {
+        "plomberie": {
+          "receveur_standard": { "unite": "u", "mat_min": 180, "mat_moy": 250, "mat_max": 400, "mo_min": 150, "mo_moy": 200, "mo_max": 300, "reviewed": true },
+          "paroi_douche_fixe": { "unite": "u", "mat_min": 250, "mat_moy": 350, "mat_max": 500, "mo_min": 100, "mo_moy": 150, "mo_max": 200, "reviewed": true },
+          "mitigeur_douche": { "unite": "u", "mat_min": 50, "mat_moy": 75, "mat_max": 120, "mo_min": 60, "mo_moy": 80, "mo_max": 120, "reviewed": true },
+          "mitigeur_lavabo": { "unite": "u", "mat_min": 40, "mat_moy": 60, "mat_max": 100, "mo_min": 50, "mo_moy": 70, "mo_max": 100, "reviewed": true },
+          "meuble_vasque": { "unite": "u", "mat_min": 120, "mat_moy": 180, "mat_max": 300, "mo_min": 80, "mo_moy": 120, "mo_max": 180, "reviewed": true }
+        },
+        "depose": {
+          "cabine_douche": { "unite": "u", "mat_min": 0, "mat_moy": 0, "mat_max": 0, "mo_min": 100, "mo_moy": 130, "mo_max": 170, "reviewed": true }
+        }
       }
-    }
-  },
-  "keywords": {
-    "cabine_douche": ["cabine", "douche existante"],
-    "receveur": ["receveur", "bac à douche", "bac de douche"],
-    "carrelage": ["carrelage", "grès cérame", "grès"],
-    "faience": ["faïence", "faience", "carrelage mural"],
-    "ragreage": ["ragréage", "ragreage", "lissage sol", "mise à niveau"],
-    "paroi_douche": ["paroi de douche", "paroi douche", "pare-douche"],
-    "mitigeur_douche": ["mitigeur douche", "mitigeur de douche", "robinet douche"],
-    "mitigeur_lavabo": ["mitigeur lavabo", "robinet lavabo"],
-    "peinture": ["peinture", "peindre"],
-    "enduit": ["enduit", "lissage"],
-    "joint": ["joint", "silicone", "acrylique"],
-    "per": ["PER", "alimentation", "eau chaude", "eau froide", "tuyau"],
-    "meuble_vasque": ["meuble vasque", "meuble salle de bain", "meuble sur pieds"],
-    "vasque": ["vasque", "lavabo"],
-    "bonde": ["bonde", "évacuation douche", "DN90"],
-    "ensemble_douche": ["ensemble de douche", "barre de douche", "douchette"]
+    },
+    "cuisine": {
+      "postes_specifiques": {
+        "meubles": {
+          "meuble_bas_standard": { "unite": "ml", "mat_min": 200, "mat_moy": 350, "mat_max": 600, "mo_min": 80, "mo_moy": 120, "mo_max": 180, "reviewed": false },
+          "meuble_haut_standard": { "unite": "ml", "mat_min": 150, "mat_moy": 280, "mat_max": 500, "mo_min": 80, "mo_moy": 120, "mo_max": 180, "reviewed": false },
+          "plan_travail_stratifie": { "unite": "ml", "mat_min": 80, "mat_moy": 150, "mat_max": 280, "mo_min": 40, "mo_moy": 60, "mo_max": 90, "reviewed": false }
+        }
+      }
+    },
+    "salon": { "postes_specifiques": {} },
+    "chambre": { "postes_specifiques": {} },
+    "wc": { "postes_specifiques": {} },
+    "entree": { "postes_specifiques": {} },
+    "toiture": { "postes_specifiques": {} },
+    "facade": { "postes_specifiques": {} }
   }
 }
