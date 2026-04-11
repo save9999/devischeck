@@ -2,3 +2,5 @@ node_modules
 dist
 .superpowers
 .vercel
+.worktrees
+.env.local
