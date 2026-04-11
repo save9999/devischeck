@@ -335,3 +335,26 @@ body {
 .detected-piece .dims input { width: 70px; padding: 4px 6px; }
 .warn-text { color: #b45309; font-size: 13px; margin-top: 8px; }
 .muted { color: #888; font-size: 14px; }
+
+/* === AnalysisReport + AnomalyCard === */
+.analysis-report section { margin-bottom: 24px; }
+.analysis-report .clickable { cursor: pointer; user-select: none; }
+.verdict-banner { color: white; padding: 20px 24px; border-radius: 8px; margin-bottom: 20px; }
+.verdict-banner h2 { margin: 0; }
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.summary > div { background: #f6f7f9; padding: 16px; border-radius: 8px; }
+.summary .label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+.summary strong { font-size: 20px; }
+.summary strong.warn { color: #b45309; }
+.anomaly-card { background: white; border: 1px solid #e0e3e8; border-left: 4px solid; border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+.anomaly-card header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.anomaly-card .verdict-badge { color: white; font-size: 11px; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+.anomaly-card .type-badge { background: #eef; color: #334; font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+.anomaly-card .line-num { margin-left: auto; color: #888; font-size: 12px; }
+.anomaly-card .designation { margin: 8px 0; font-size: 14px; }
+.anomaly-card .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; font-size: 13px; }
+.anomaly-card .numbers .label { display: block; font-size: 11px; color: #888; }
+.anomaly-card .artisan { font-weight: bold; }
+.anomaly-card .ecart { font-weight: bold; }
+.anomaly-card .reason { font-size: 12px; color: #888; margin-top: 8px; font-style: italic; }
+.report-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e0e3e8; font-size: 13px; color: #666; }

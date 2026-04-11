@@ -1,85 +1,68 @@
-import { jsPDF } from 'jspdf'
-import VerdictBanner from './VerdictBanner'
-import LineAnalysis from './LineAnalysis'
-import CounterQuote from './CounterQuote'
-import Recommendations from './Recommendations'
-import { generateRecommendations } from '../utils/reportGenerator'
+import { useState } from 'react'
+import AnomalyCard from './AnomalyCard'
+import DetectedInfo from './DetectedInfo'
 
-export default function AnalysisReport({ analysis, onReset }) {
-  function exportPdf() {
-    const doc = new jsPDF()
-    const margin = 20
-    let y = 20
+function formatEuro(n) {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
+}
 
-    doc.setFontSize(20)
-    doc.setTextColor(5, 150, 105)
-    doc.text('DevisCheck — Analyse de votre devis', margin, y)
-    y += 12
+const VERDICT_BANNER = {
+  ok: { text: '✓ Devis conforme au marché', color: '#15803d' },
+  warn: { text: '⚠ Quelques lignes à surveiller', color: '#b45309' },
+  bad: { text: '⚠ Devis problématique', color: '#b91c1c' },
+}
 
-    doc.setFontSize(12)
-    doc.setTextColor(30, 30, 30)
-    doc.text(`Devis artisan : ${analysis.totalArtisan.toFixed(2)} EUR HT`, margin, y); y += 7
-    doc.text(`Prix marche : ${analysis.totalMarche.toFixed(2)} EUR HT`, margin, y); y += 7
-    doc.setTextColor(220, 38, 38)
-    doc.text(`Surfacturation : +${analysis.ecartPourcent}% (${analysis.ecartEuros.toFixed(2)} EUR)`, margin, y); y += 12
+export default function AnalysisReport({ analysis, extraction, onRecompute, onReset }) {
+  const [showConformes, setShowConformes] = useState(false)
 
-    doc.setFontSize(14)
-    doc.setTextColor(30, 30, 30)
-    doc.text('Analyse ligne par ligne', margin, y); y += 8
+  const anomalies = analysis.lines.filter(l => l.verdict === 'bad' || l.verdict === 'warn' || l.verdict === 'low')
+  const conformes = analysis.lines.filter(l => l.verdict === 'ok')
+  const nonAnalysables = analysis.lines.filter(l => l.verdict === 'unknown')
 
-    doc.setFontSize(9)
-    for (const line of analysis.lines) {
-      if (y > 270) { doc.addPage(); y = 20 }
-      const icon = line.verdict === 'ok' ? '[OK]' : line.verdict === 'warn' ? '[!]' : line.verdict === 'bad' ? '[!!]' : '[?]'
-      const text = `${icon} ${line.designation.substring(0, 50)} — ${line.montantHT.toFixed(2)} EUR`
-      const market = line.matched ? ` (marche: ${line.prixMarche.toFixed(2)} EUR, ${line.ecartPourcent > 0 ? '+' : ''}${line.ecartPourcent}%)` : ' (non identifie)'
-
-      if (line.verdict === 'bad') doc.setTextColor(220, 38, 38)
-      else if (line.verdict === 'warn') doc.setTextColor(245, 158, 11)
-      else doc.setTextColor(5, 150, 105)
-
-      doc.text(text + market, margin, y)
-      y += 5
-    }
-
-    y += 8
-    if (y > 250) { doc.addPage(); y = 20 }
-    doc.setFontSize(14)
-    doc.setTextColor(30, 30, 30)
-    doc.text('Recommandations', margin, y); y += 8
-
-    doc.setFontSize(9)
-    const recs = generateRecommendations(analysis)
-    for (const rec of recs) {
-      if (y > 270) { doc.addPage(); y = 20 }
-      doc.setTextColor(30, 30, 30)
-      doc.text(`${rec.icon} ${rec.title}`, margin, y); y += 5
-      doc.setTextColor(100, 100, 100)
-      const msgLines = doc.splitTextToSize(rec.message, 170)
-      doc.text(msgLines, margin, y); y += msgLines.length * 4 + 4
-    }
-
-    doc.setFontSize(8)
-    doc.setTextColor(150, 150, 150)
-    doc.text('Genere par DevisCheck — Prix marche IDF 2026', margin, 285)
-
-    doc.save('devischeck-analyse.pdf')
-  }
+  const banner = VERDICT_BANNER[analysis.verdict] || VERDICT_BANNER.ok
+  const anomalyCount = anomalies.length
 
   return (
-    <div>
-      <VerdictBanner analysis={analysis} />
-      <LineAnalysis lines={analysis.lines} />
-      <CounterQuote analysis={analysis} />
-      <Recommendations analysis={analysis} />
-      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-        <button className="btn btn-primary" onClick={exportPdf}>
-          📥 Télécharger l'analyse en PDF
-        </button>
-        <button className="btn btn-outline" onClick={onReset}>
-          ← Nouveau devis
-        </button>
+    <div className="analysis-report">
+      <div className="verdict-banner" style={{ background: banner.color }}>
+        <h2>{anomalyCount > 0 ? `${anomalyCount} ligne${anomalyCount > 1 ? 's' : ''} à surveiller` : banner.text}</h2>
       </div>
+
+      <div className="summary">
+        <div><span className="label">Total artisan</span><strong>{formatEuro(analysis.totalArtisan)}</strong></div>
+        <div><span className="label">Fourchette marché</span><strong>{formatEuro(analysis.totalMarcheMin)} – {formatEuro(analysis.totalMarcheMax)}</strong></div>
+        <div><span className="label">Écart</span><strong className={analysis.ecartPourcent > 10 ? 'warn' : ''}>{analysis.ecartPourcent > 0 ? '+' : ''}{analysis.ecartPourcent}%</strong></div>
+      </div>
+
+      <DetectedInfo extraction={extraction} onRecompute={onRecompute} />
+
+      {anomalies.length > 0 && (
+        <section>
+          <h3>Lignes à surveiller</h3>
+          {anomalies.map(l => <AnomalyCard key={l.numero} line={l} />)}
+        </section>
+      )}
+
+      {conformes.length > 0 && (
+        <section>
+          <h3 onClick={() => setShowConformes(v => !v)} className="clickable">
+            Lignes conformes ({conformes.length}) {showConformes ? '▾' : '▸'}
+          </h3>
+          {showConformes && conformes.map(l => <AnomalyCard key={l.numero} line={l} />)}
+        </section>
+      )}
+
+      {nonAnalysables.length > 0 && (
+        <section>
+          <h3>Non analysables ({nonAnalysables.length})</h3>
+          {nonAnalysables.map(l => <AnomalyCard key={l.numero} line={l} />)}
+        </section>
+      )}
+
+      <footer className="report-footer">
+        <p>Prix indicatifs ±15%. Cet outil signale les anomalies, ne certifie pas le prix juste.</p>
+        <button className="btn" onClick={onReset}>Analyser un autre devis</button>
+      </footer>
     </div>
   )
 }
