@@ -1,16 +1,58 @@
-# React + Vite
+# DevisCheck
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vérificateur de devis BTP pour particuliers. Upload un PDF, l'app détecte automatiquement les pièces, les métrés, le code postal, le type de prestation (fourniture/pose) et compare chaque ligne à des fourchettes de prix marché.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend** : React 19 + Vite 8
+- **Backend** : Vercel Functions Node (`api/analyze-devis.js`)
+- **IA** : Claude Sonnet 4.5 via Anthropic SDK
+- **Tests** : Vitest
 
-## React Compiler
+## Dev local
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# 1. Installer
+npm install
 
-## Expanding the ESLint configuration
+# 2. Configurer la clé Claude
+cp .env.local.example .env.local
+# Éditer .env.local et coller ta clé ANTHROPIC_API_KEY
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 3. Lancer avec Vercel dev (nécessaire pour que /api/* fonctionne)
+npx vercel dev
+```
+
+Note : `npm run dev` lance Vite seul SANS la Vercel Function — l'analyse échouera. Utilise `vercel dev`.
+
+## Tests
+
+```bash
+npm test            # run once
+npm run test:watch  # watch mode
+```
+
+## Régénérer la base de prix
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+node scripts/generatePrixBTP.js
+# → produit src/data/prixBTP.next.json
+# Relire le fichier, comparer avec prixBTP.json (git diff), puis :
+mv src/data/prixBTP.next.json src/data/prixBTP.json
+# Passer manuellement reviewed: true sur les entrées validées
+```
+
+## Déploiement
+
+Push sur `main` → Vercel build automatique. Variable d'env `ANTHROPIC_API_KEY` à configurer dans Settings → Environment Variables (Production + Preview).
+
+## Architecture
+
+Voir `docs/superpowers/specs/2026-04-12-devischeck-refonte-design.md` pour le détail.
+
+## Limites connues
+
+- PDF scannés non supportés (pas d'OCR)
+- Prix indicatifs ±15%, cet outil ne certifie pas un prix
+- Secteurs ERP/tertiaire non couverts
