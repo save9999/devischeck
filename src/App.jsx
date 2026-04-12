@@ -1,18 +1,70 @@
 import { useState } from 'react'
 import './App.css'
 import UploadZone from './components/UploadZone'
-import RoomList from './components/RoomList'
 import AnalysisReport from './components/AnalysisReport'
-import { calculateSurfaces } from './utils/surfaceCalculator'
+import { extractPdfText } from './utils/pdfExtractor'
 import { analyzeDevis } from './utils/priceAnalyzer'
+import { enrichPiecesWithSurfaces } from './utils/surfaceCalculator'
+import prixBTP from './data/prixBTP.json'
 
-const STEPS = { UPLOAD: 1, DIMENSIONS: 2, RESULTS: 3 }
+const STEPS = { UPLOAD: 1, LOADING: 2, RESULTS: 3, ERROR: 5 }
 
 function App() {
   const [step, setStep] = useState(STEPS.UPLOAD)
-  const [devisLines, setDevisLines] = useState([])
-  const [rooms, setRooms] = useState([])
+  const [loadingStage, setLoadingStage] = useState('')
+  const [extraction, setExtraction] = useState(null)
   const [analysis, setAnalysis] = useState(null)
+  const [errorMsg, setErrorMsg] = useState('')
+
+  async function handleUpload(file) {
+    setStep(STEPS.LOADING)
+    setLoadingStage('Lecture du PDF…')
+    try {
+      const { fullText, numPages } = await extractPdfText(file)
+      if (!fullText || fullText.length < 50) {
+        setErrorMsg("Ce PDF semble être un scan. L'OCR n'est pas encore supporté.")
+        setStep(STEPS.ERROR)
+        return
+      }
+
+      setLoadingStage(`Analyse des ${numPages} page${numPages > 1 ? 's' : ''} via IA…`)
+      const res = await fetch('/api/analyze-devis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullText }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setErrorMsg(err.error || 'Analyse impossible. Réessaie dans quelques instants.')
+        setStep(STEPS.ERROR)
+        return
+      }
+      const raw = await res.json()
+
+      setLoadingStage('Vérification des prix marché…')
+      const enriched = enrichPiecesWithSurfaces(raw)
+      setExtraction(enriched)
+      setAnalysis(analyzeDevis(enriched, prixBTP))
+      setStep(STEPS.RESULTS)
+    } catch (err) {
+      console.error(err)
+      setErrorMsg('Erreur inattendue. Vérifie le fichier et réessaie.')
+      setStep(STEPS.ERROR)
+    }
+  }
+
+  function handleRecompute(updatedExtraction) {
+    const enriched = enrichPiecesWithSurfaces(updatedExtraction)
+    setExtraction(enriched)
+    setAnalysis(analyzeDevis(enriched, prixBTP))
+  }
+
+  function handleReset() {
+    setStep(STEPS.UPLOAD)
+    setExtraction(null)
+    setAnalysis(null)
+    setErrorMsg('')
+  }
 
   return (
     <div className="app">
@@ -21,84 +73,39 @@ function App() {
           <span className="logo-icon">€</span>
           <span className="logo-text">DevisCheck</span>
         </div>
-        <p className="tagline">Vérifiez votre devis en 3 étapes</p>
+        <p className="tagline">Upload ton devis, on signale les anomalies</p>
       </header>
 
-      <div className="progress-bar">
-        <div className={`progress-step ${step >= STEPS.UPLOAD ? 'active' : ''} ${step > STEPS.UPLOAD ? 'done' : ''}`}>
-          <div className="step-circle">{step > STEPS.UPLOAD ? '✓' : '1'}</div>
-          <span>Devis PDF</span>
-        </div>
-        <div className="progress-line" />
-        <div className={`progress-step ${step >= STEPS.DIMENSIONS ? 'active' : ''} ${step > STEPS.DIMENSIONS ? 'done' : ''}`}>
-          <div className="step-circle">{step > STEPS.DIMENSIONS ? '✓' : '2'}</div>
-          <span>Dimensions</span>
-        </div>
-        <div className="progress-line" />
-        <div className={`progress-step ${step >= STEPS.RESULTS ? 'active' : ''}`}>
-          <div className="step-circle">3</div>
-          <span>Analyse</span>
-        </div>
-      </div>
-
       <main className="app-main">
-        {step === STEPS.UPLOAD && (
-          <UploadZone onDevisLoaded={(result) => {
-            setDevisLines(result.lines)
-            setRooms([{
-              id: Date.now(),
-              type: 'salle_de_bain',
-              longueur: '',
-              largeur: '',
-              hauteur: '',
-              douche: { largeur: '', profondeur: '' },
-              porte: { largeur: '0.8', hauteur: '2' },
-              fenetre: null
-            }])
-            setStep(STEPS.DIMENSIONS)
-          }} />
+        {step === STEPS.UPLOAD && <UploadZone onFile={handleUpload} />}
+
+        {step === STEPS.LOADING && (
+          <div className="loading">
+            <div className="spinner" />
+            <p>{loadingStage}</p>
+          </div>
         )}
-        {step === STEPS.DIMENSIONS && (
-          <RoomList
-            rooms={rooms}
-            onChange={setRooms}
-            devisLines={devisLines}
-            onAnalyze={() => {
-              const room = rooms[0]
-              const surfaces = calculateSurfaces({
-                ...room,
-                longueur: parseFloat(room.longueur),
-                largeur: parseFloat(room.largeur),
-                hauteur: parseFloat(room.hauteur),
-                douche: room.douche?.largeur && room.douche?.profondeur
-                  ? { largeur: parseFloat(room.douche.largeur), profondeur: parseFloat(room.douche.profondeur) }
-                  : null,
-                porte: room.porte?.largeur
-                  ? { largeur: parseFloat(room.porte.largeur), hauteur: parseFloat(room.porte.hauteur) }
-                  : null,
-                fenetre: null
-              })
-              const result = analyzeDevis(devisLines, surfaces)
-              setAnalysis(result)
-              setStep(STEPS.RESULTS)
-            }}
-          />
-        )}
+
         {step === STEPS.RESULTS && analysis && (
           <AnalysisReport
             analysis={analysis}
-            onReset={() => {
-              setStep(STEPS.UPLOAD)
-              setDevisLines([])
-              setRooms([])
-              setAnalysis(null)
-            }}
+            extraction={extraction}
+            onRecompute={handleRecompute}
+            onReset={handleReset}
           />
+        )}
+
+        {step === STEPS.ERROR && (
+          <div className="error-box">
+            <h2>Quelque chose s'est mal passé</h2>
+            <p>{errorMsg}</p>
+            <button className="btn primary" onClick={handleReset}>Réessayer</button>
+          </div>
         )}
       </main>
 
       <footer className="app-footer">
-        <p>DevisCheck — Analyse gratuite de devis BTP — Prix marché IDF 2026</p>
+        <p>DevisCheck — Analyse gratuite de devis BTP — Prix marché 2026 indicatifs ±15%</p>
       </footer>
     </div>
   )
