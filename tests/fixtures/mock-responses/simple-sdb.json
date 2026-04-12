@@ -1,0 +1,42 @@
+{
+  "codePostal": "93200",
+  "ville": "Saint-Denis",
+  "pieces": [
+    {
+      "id": "p1",
+      "type": "salle_de_bain",
+      "nom": "Salle de bain",
+      "dimensions": { "longueur": 2.5, "largeur": 2, "hauteur": 2.4 },
+      "surfaces": null,
+      "lineIds": [1, 2]
+    }
+  ],
+  "lines": [
+    {
+      "numero": 1,
+      "designation": "Fourniture et pose de carrelage grès cérame sol",
+      "quantite": 5,
+      "unite": "m²",
+      "prixUnitaire": 85,
+      "montantHT": 425,
+      "typePrestation": "fourniture_et_pose",
+      "poste": "postes_transverses.carrelage.sol_gres_cerame",
+      "pieceId": "p1",
+      "confidence": 0.9
+    },
+    {
+      "numero": 2,
+      "designation": "Peinture murs deux couches",
+      "quantite": 22,
+      "unite": "m²",
+      "prixUnitaire": 30,
+      "montantHT": 660,
+      "typePrestation": "fourniture_et_pose",
+      "poste": "postes_transverses.peinture.peinture_murs_2couches",
+      "pieceId": "p1",
+      "confidence": 0.95
+    }
+  ],
+  "totalHT": 1085,
+  "warnings": []
+}
