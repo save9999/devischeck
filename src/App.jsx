@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import UploadZone from './components/UploadZone'
 import AnalysisReport from './components/AnalysisReport'
+import MethodologyPage from './components/MethodologyPage'
 import { extractPdfText } from './utils/pdfExtractor'
 import { analyzeDevis } from './utils/priceAnalyzer'
 import { enrichPiecesWithSurfaces } from './utils/surfaceCalculator'
@@ -15,6 +16,7 @@ function App() {
   const [extraction, setExtraction] = useState(null)
   const [analysis, setAnalysis] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
+  const [showMethodology, setShowMethodology] = useState(false)
 
   async function handleUpload(file) {
     setStep(STEPS.LOADING)
@@ -66,6 +68,19 @@ function App() {
     setErrorMsg('')
   }
 
+  if (showMethodology) {
+    return (
+      <div className="app">
+        <header className="app-header">
+          <div className="logo"><span className="logo-icon">€</span><span className="logo-text">DevisCheck</span></div>
+        </header>
+        <main className="app-main">
+          <MethodologyPage onBack={() => setShowMethodology(false)} />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <header className="app-header">
@@ -105,7 +120,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>DevisCheck — Analyse gratuite de devis BTP — Prix marché 2026 indicatifs ±15%</p>
+        <p>DevisCheck — Analyse gratuite de devis BTP — <button className="link-btn" onClick={() => setShowMethodology(true)}>Méthodologie</button></p>
       </footer>
     </div>
   )
