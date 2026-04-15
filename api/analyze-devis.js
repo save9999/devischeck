@@ -60,7 +60,7 @@ export default async function handler(req, res) {
 async function callClaudeWithRetry(userPrompt, attempt = 1) {
   try {
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
       system: [
         {
