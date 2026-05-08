@@ -37,7 +37,12 @@ function App() {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        setErrorMsg(err.error || 'Analyse impossible. Réessaie dans quelques instants.')
+        const fallback = res.status === 503
+          ? "Service d'analyse momentanément indisponible. Réessaie plus tard."
+          : res.status === 429
+            ? "Trop de requêtes. Réessaie dans une minute."
+            : 'Analyse impossible. Réessaie dans quelques instants.'
+        setErrorMsg(err.error || fallback)
         setStep(STEPS.ERROR)
         return
       }

@@ -49,9 +49,30 @@ export default async function handler(req, res) {
     const json = parseClaudeJson(response)
     res.status(200).json(json)
   } catch (err) {
-    console.error('analyze-devis error:', err)
+    console.error('analyze-devis error:', err?.status, err?.error?.error?.type, err?.message)
+
+    const status = err?.status
+    const anthropicMessage = err?.error?.error?.message || ''
+    const isCreditIssue = anthropicMessage.includes('credit balance')
+    const isAuthIssue = status === 401 || status === 403
+
+    if (isCreditIssue || isAuthIssue) {
+      res.status(503).json({
+        error: "Service d'analyse momentanément indisponible. Merci de réessayer plus tard.",
+        code: 'SERVICE_UNAVAILABLE',
+      })
+      return
+    }
+    if (status === 429) {
+      res.status(429).json({
+        error: "Service surchargé. Réessaie dans quelques minutes.",
+        code: 'RATE_LIMITED',
+      })
+      return
+    }
     res.status(502).json({
       error: 'Analyse impossible. Réessaie dans quelques instants.',
+      code: 'UPSTREAM_ERROR',
       detail: process.env.NODE_ENV === 'development' ? err.message : undefined,
     })
   }
@@ -73,7 +94,9 @@ async function callClaudeWithRetry(userPrompt, attempt = 1) {
     })
     return msg
   } catch (err) {
-    if (attempt >= 3) throw err
+    const status = err?.status
+    const nonRetryable = status === 400 || status === 401 || status === 403 || status === 413
+    if (nonRetryable || attempt >= 3) throw err
     await new Promise(r => setTimeout(r, 1000 * attempt))
     return callClaudeWithRetry(userPrompt, attempt + 1)
   }
