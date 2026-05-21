@@ -1,27 +1,34 @@
 import { useState } from 'react'
 import './App.css'
+import Landing from './components/Landing'
 import UploadZone from './components/UploadZone'
 import RoomList from './components/RoomList'
 import AnalysisReport from './components/AnalysisReport'
 import { calculateSurfaces } from './utils/surfaceCalculator'
 import { analyzeDevis } from './utils/priceAnalyzer'
 
-const STEPS = { UPLOAD: 1, DIMENSIONS: 2, RESULTS: 3 }
+const STEPS = { LANDING: 0, UPLOAD: 1, DIMENSIONS: 2, RESULTS: 3 }
 
 function App() {
-  const [step, setStep] = useState(STEPS.UPLOAD)
+  const [step, setStep] = useState(STEPS.LANDING)
   const [devisLines, setDevisLines] = useState([])
   const [rooms, setRooms] = useState([])
   const [analysis, setAnalysis] = useState(null)
 
+  if (step === STEPS.LANDING) {
+    return <Landing onStart={() => setStep(STEPS.UPLOAD)} />
+  }
+
   return (
     <div className="app">
       <header className="app-header">
-        <div className="logo">
-          <span className="logo-icon">€</span>
-          <span className="logo-text">DevisCheck</span>
+        <div className="app-header-inner">
+          <button className="logo logo-btn" onClick={() => setStep(STEPS.LANDING)}>
+            <span className="logo-icon">€</span>
+            <span className="logo-text">DevisCheck</span>
+          </button>
+          <p className="tagline">Vérifiez votre devis en 3 étapes</p>
         </div>
-        <p className="tagline">Vérifiez votre devis en 3 étapes</p>
       </header>
 
       <div className="progress-bar">
@@ -88,7 +95,7 @@ function App() {
           <AnalysisReport
             analysis={analysis}
             onReset={() => {
-              setStep(STEPS.UPLOAD)
+              setStep(STEPS.LANDING)
               setDevisLines([])
               setRooms([])
               setAnalysis(null)
@@ -98,7 +105,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>DevisCheck — Analyse gratuite de devis BTP — Prix marché IDF 2026</p>
+        <p>DevisCheck — Analyse de devis BTP — Prix marché IDF 2026 — <a href="#" style={{color:'inherit'}}>Mentions légales</a></p>
       </footer>
     </div>
   )
