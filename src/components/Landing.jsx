@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const CHECKS = [
   { icon: '📊', label: 'Prix du marché IDF 2026', desc: 'Comparaison avec 200+ prestations BTP' },
@@ -88,9 +89,10 @@ export default function Landing({ onStart }) {
 
   return (
     <div className="landing">
+      <a href="#main-content" className="skip-to-content">Aller au contenu principal</a>
 
       {/* Hero */}
-      <section className="hero">
+      <section className="hero" id="main-content">
         <div className="hero-badge">Gratuit — Analyse en 60 secondes</div>
         <h1 className="hero-title">
           Votre devis BTP est-il<br />
@@ -100,13 +102,13 @@ export default function Landing({ onStart }) {
           L'IA qui détecte les arnaques, surfacturations et mentions légales manquantes.
           Uploadez votre devis — recevez un rapport complet en moins d'une minute.
         </p>
-        <button className="btn-hero" onClick={onStart}>
+        <button className="btn-hero" onClick={onStart} aria-label="Vérifier mon devis BTP maintenant">
           Vérifier mon devis maintenant →
         </button>
         <p className="hero-reassure">PDF uniquement · Vos données supprimées après analyse · RGPD</p>
 
         {/* Mock devis annoté */}
-        <div className="hero-mockup">
+        <figure className="hero-mockup" aria-label="Exemple de devis analysé avec annotations de surfacturation">
           <div className="mockup-card">
             <div className="mockup-header">
               <span className="mockup-badge-label">DEVIS REÇU</span>
@@ -139,7 +141,7 @@ export default function Landing({ onStart }) {
               <strong className="mockup-savings">+1 840 €</strong>
             </div>
           </div>
-        </div>
+        </figure>
       </section>
 
       {/* Comment ça marche */}
@@ -157,7 +159,7 @@ export default function Landing({ onStart }) {
           ))}
         </div>
         <div className="steps-cta">
-          <button className="btn-hero" onClick={onStart}>
+          <button className="btn-hero" onClick={onStart} aria-label="Analyser mon devis BTP">
             Analyser mon devis →
           </button>
         </div>
@@ -272,17 +274,29 @@ export default function Landing({ onStart }) {
       <section className="section">
         <div className="section-label">FAQ</div>
         <h2 className="section-title-h2">Questions fréquentes</h2>
-        <div className="faq-list">
+        <div className="faq-list" role="list">
           {FAQ.map((f, i) => (
-            <div key={i} className="faq-item">
-              <button
-                className="faq-question"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+            <div key={i} className="faq-item" role="listitem">
+              <h3 className="faq-item-heading">
+                <button
+                  className="faq-question"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  aria-expanded={openFaq === i}
+                  aria-controls={`faq-answer-${i}`}
+                  id={`faq-btn-${i}`}
+                >
+                  {f.q}
+                  <span className={`faq-chevron ${openFaq === i ? 'open' : ''}`} aria-hidden="true">›</span>
+                </button>
+              </h3>
+              <div
+                id={`faq-answer-${i}`}
+                role="region"
+                aria-labelledby={`faq-btn-${i}`}
+                hidden={openFaq !== i}
               >
-                {f.q}
-                <span className={`faq-chevron ${openFaq === i ? 'open' : ''}`}>›</span>
-              </button>
-              {openFaq === i && <p className="faq-answer">{f.a}</p>}
+                <p className="faq-answer">{f.a}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -292,23 +306,30 @@ export default function Landing({ onStart }) {
       <section className="cta-final">
         <h2 className="cta-title">Votre prochain devis mérite d'être vérifié.</h2>
         <p className="cta-sub">Les surfacturations dépassent souvent 20% du total. Ne signez plus sans savoir.</p>
-        <button className="btn-hero" onClick={onStart}>
-          Vérifier mon devis gratuitement →
+        <button className="btn-hero" onClick={onStart} aria-label="Vérifier mon devis BTP">
+          Vérifier mon devis →
         </button>
+        <p className="cta-disclaimer">
+          DevisCheck est un outil d'aide à la décision — il ne remplace pas un expert BTP, un huissier ou un conseiller juridique.
+        </p>
       </section>
 
       {/* Footer */}
-      <footer className="landing-footer">
-        <div className="footer-logo">
-          <span className="footer-logo-icon">€</span>
+      <footer className="landing-footer" role="contentinfo">
+        <div className="footer-logo" aria-label="Logo DevisCheck">
+          <span className="footer-logo-icon" aria-hidden="true">€</span>
           <span className="footer-logo-text">DevisCheck</span>
         </div>
-        <div className="footer-links">
-          <a href="#">Mentions légales</a>
-          <a href="#">Politique de confidentialité</a>
-          <a href="#">CGU</a>
-          <a href="#">Contact</a>
-        </div>
+        <nav className="footer-links" aria-label="Liens légaux">
+          <Link to="/mentions-legales">Mentions légales</Link>
+          <Link to="/confidentialite">Politique de confidentialité</Link>
+          <Link to="/cgu">CGU</Link>
+          <Link to="/cgv">CGV</Link>
+          <a href="mailto:contact@devischeck.fr">Contact</a>
+        </nav>
+        <p className="footer-disclaimer">
+          Outil d'aide à la décision — DevisCheck ne remplace pas un expert BTP, un huissier ou un conseiller juridique.
+        </p>
         <p className="footer-copy">© 2026 DevisCheck — Prix marché IDF 2026 · Tous droits réservés</p>
       </footer>
 

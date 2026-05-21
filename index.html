@@ -1,12 +1,110 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>devischeck</title>
+
+    <!-- SEO primary -->
+    <title>DevisCheck — Vérifiez votre devis BTP, détectez arnaques et surfacturations</title>
+    <meta name="description" content="DevisCheck analyse votre devis BTP en 60 secondes : détecte les surfacturations, arnaques travaux et mentions légales manquantes. Outil IA basé sur les prix du marché IDF 2026." />
+    <meta name="keywords" content="devis BTP douteux, surfacturation travaux, arnaque travaux, vérifier devis, analyser devis BTP, devis salle de bain prix, contre-devis, prix marché BTP, IA analyse devis" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://devischeck.vercel.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://devischeck.vercel.app/" />
+    <meta property="og:title" content="DevisCheck — Votre devis BTP est-il honnête ou gonflé ?" />
+    <meta property="og:description" content="L'IA qui détecte les arnaques, surfacturations et mentions légales manquantes dans vos devis BTP. Analyse en 60 secondes." />
+    <meta property="og:image" content="https://devischeck.vercel.app/og.png.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="DevisCheck" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://devischeck.vercel.app/" />
+    <meta name="twitter:title" content="DevisCheck — Votre devis BTP est-il honnête ou gonflé ?" />
+    <meta name="twitter:description" content="L'IA qui détecte les arnaques, surfacturations et mentions légales manquantes dans vos devis BTP." />
+    <meta name="twitter:image" content="https://devischeck.vercel.app/og.png.svg" />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://devischeck.vercel.app/#organization",
+          "name": "DevisCheck",
+          "url": "https://devischeck.vercel.app",
+          "logo": "https://devischeck.vercel.app/favicon.svg",
+          "description": "Service d'analyse de devis BTP par intelligence artificielle",
+          "areaServed": "FR"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://devischeck.vercel.app/#webapp",
+          "name": "DevisCheck",
+          "url": "https://devischeck.vercel.app",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Analysez votre devis BTP en 60 secondes : surfacturations, arnaques, mentions légales manquantes.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Analyse unique",
+              "price": "9.99",
+              "priceCurrency": "EUR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Illimité",
+              "price": "14.99",
+              "priceCurrency": "EUR",
+              "billingIncrement": "P1M"
+            }
+          ],
+          "publisher": { "@id": "https://devischeck.vercel.app/#organization" }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://devischeck.vercel.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Mes données sont-elles sécurisées ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Votre devis est analysé puis immédiatement supprimé de nos serveurs. Aucun stockage, aucune transmission à des tiers. Conforme RGPD."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Quels types de devis peut-on analyser ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tous les devis BTP en Île-de-France : plomberie, carrelage, électricité, peinture, menuiserie, rénovation complète. Le moteur couvre 200+ postes."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "La vérification est-elle garantie 100% exacte ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "L'analyse compare à des prix marché représentatifs. C'est un outil d'aide à la décision — pas un audit juridique. DevisCheck ne remplace pas un expert ou un huissier."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

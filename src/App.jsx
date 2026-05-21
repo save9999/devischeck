@@ -1,15 +1,22 @@
 import { useState } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import Landing from './components/Landing'
 import UploadZone from './components/UploadZone'
 import RoomList from './components/RoomList'
 import AnalysisReport from './components/AnalysisReport'
+import MentionsLegales from './components/legal/MentionsLegales'
+import CGU from './components/legal/CGU'
+import CGV from './components/legal/CGV'
+import Confidentialite from './components/legal/Confidentialite'
+import NotFound from './components/NotFound'
+import CookieBanner from './components/CookieBanner'
 import { calculateSurfaces } from './utils/surfaceCalculator'
 import { analyzeDevis } from './utils/priceAnalyzer'
 
 const STEPS = { LANDING: 0, UPLOAD: 1, DIMENSIONS: 2, RESULTS: 3 }
 
-function App() {
+function AppWorkflow() {
   const [step, setStep] = useState(STEPS.LANDING)
   const [devisLines, setDevisLines] = useState([])
   const [rooms, setRooms] = useState([])
@@ -21,34 +28,53 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
+      <a href="#main-content" className="skip-to-content">Aller au contenu principal</a>
+      <header className="app-header" role="banner">
         <div className="app-header-inner">
-          <button className="logo logo-btn" onClick={() => setStep(STEPS.LANDING)}>
-            <span className="logo-icon">€</span>
+          <button
+            className="logo logo-btn"
+            onClick={() => setStep(STEPS.LANDING)}
+            aria-label="Retour à l'accueil DevisCheck"
+          >
+            <span className="logo-icon" aria-hidden="true">€</span>
             <span className="logo-text">DevisCheck</span>
           </button>
           <p className="tagline">Vérifiez votre devis en 3 étapes</p>
         </div>
       </header>
 
-      <div className="progress-bar">
-        <div className={`progress-step ${step >= STEPS.UPLOAD ? 'active' : ''} ${step > STEPS.UPLOAD ? 'done' : ''}`}>
-          <div className="step-circle">{step > STEPS.UPLOAD ? '✓' : '1'}</div>
-          <span>Devis PDF</span>
+      <nav aria-label="Étapes de l'analyse">
+        <div className="progress-bar" role="list">
+          <div
+            className={`progress-step ${step >= STEPS.UPLOAD ? 'active' : ''} ${step > STEPS.UPLOAD ? 'done' : ''}`}
+            role="listitem"
+            aria-current={step === STEPS.UPLOAD ? 'step' : undefined}
+          >
+            <div className="step-circle" aria-hidden="true">{step > STEPS.UPLOAD ? '✓' : '1'}</div>
+            <span>Devis PDF</span>
+          </div>
+          <div className="progress-line" aria-hidden="true" />
+          <div
+            className={`progress-step ${step >= STEPS.DIMENSIONS ? 'active' : ''} ${step > STEPS.DIMENSIONS ? 'done' : ''}`}
+            role="listitem"
+            aria-current={step === STEPS.DIMENSIONS ? 'step' : undefined}
+          >
+            <div className="step-circle" aria-hidden="true">{step > STEPS.DIMENSIONS ? '✓' : '2'}</div>
+            <span>Dimensions</span>
+          </div>
+          <div className="progress-line" aria-hidden="true" />
+          <div
+            className={`progress-step ${step >= STEPS.RESULTS ? 'active' : ''}`}
+            role="listitem"
+            aria-current={step === STEPS.RESULTS ? 'step' : undefined}
+          >
+            <div className="step-circle" aria-hidden="true">3</div>
+            <span>Analyse</span>
+          </div>
         </div>
-        <div className="progress-line" />
-        <div className={`progress-step ${step >= STEPS.DIMENSIONS ? 'active' : ''} ${step > STEPS.DIMENSIONS ? 'done' : ''}`}>
-          <div className="step-circle">{step > STEPS.DIMENSIONS ? '✓' : '2'}</div>
-          <span>Dimensions</span>
-        </div>
-        <div className="progress-line" />
-        <div className={`progress-step ${step >= STEPS.RESULTS ? 'active' : ''}`}>
-          <div className="step-circle">3</div>
-          <span>Analyse</span>
-        </div>
-      </div>
+      </nav>
 
-      <main className="app-main">
+      <main className="app-main" id="main-content">
         {step === STEPS.UPLOAD && (
           <UploadZone onDevisLoaded={(result) => {
             setDevisLines(result.lines)
@@ -104,10 +130,32 @@ function App() {
         )}
       </main>
 
-      <footer className="app-footer">
-        <p>DevisCheck — Analyse de devis BTP — Prix marché IDF 2026 — <a href="#" style={{color:'inherit'}}>Mentions légales</a></p>
+      <footer className="app-footer" role="contentinfo">
+        <p>
+          DevisCheck — Analyse de devis BTP — Prix marché IDF 2026 —{' '}
+          <a href="/mentions-legales" style={{color:'inherit'}}>Mentions légales</a>
+          {' · '}
+          <a href="/confidentialite" style={{color:'inherit'}}>Confidentialité</a>
+        </p>
       </footer>
+
+      <CookieBanner />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<AppWorkflow />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
+        <Route path="/cgu" element={<CGU />} />
+        <Route path="/cgv" element={<CGV />} />
+        <Route path="/confidentialite" element={<Confidentialite />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   )
 }
 
